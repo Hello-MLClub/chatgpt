@@ -1,1 +1,91 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>设置</title><link rel="stylesheet" href="styles.css"></head><body><main class="options"><h1>API 设置</h1><label>YouTube Data API Key<input id="youtubeApiKey" type="password"></label><label>twitterapi.io Key<input id="twitterApiKey" type="password"></label><label>WeChat API Base<input id="wechatApiBase" placeholder="https://example.com"></label><label>WeChat App ID<input id="wechatAppId"></label><label>WeChat App Secret<input id="wechatAppSecret" type="password"></label><label>WeChat Access Token<input id="wechatAccessToken" type="password"></label><button id="save">保存</button><p id="status"></p></main><script type="module" src="options.js"></script></body></html>
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Viral Topic Finder 设置</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="settings-page">
+  <main class="options shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Chrome Extension Console</p>
+        <h1>爆款选题助手设置</h1>
+        <p class="lede">集中配置 API 凭据、平台阈值与离线工作流。所有密钥只保存在浏览器本地 storage。</p>
+      </div>
+      <div class="hero-card">
+        <span class="status-dot"></span>
+        <strong>Manifest V3</strong>
+        <small>本地运行 · 可离线筛选</small>
+      </div>
+    </header>
+
+    <form id="settingsForm" class="settings-grid">
+      <section class="panel span-2">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Credentials</p>
+            <h2>API 连接</h2>
+          </div>
+          <button id="testConfig" class="ghost" type="button">检查配置</button>
+        </div>
+        <div class="field-grid">
+          <label>YouTube Data API Key<input id="youtubeApiKey" type="password" autocomplete="off" placeholder="AIza..."></label>
+          <label>twitterapi.io Key<input id="twitterApiKey" type="password" autocomplete="off" placeholder="tw_..."></label>
+          <label>WeChat API Base<input id="wechatApiBase" type="url" placeholder="https://example.com"></label>
+          <label>WeChat App ID<input id="wechatAppId" autocomplete="off"></label>
+          <label>WeChat App Secret<input id="wechatAppSecret" type="password" autocomplete="off"></label>
+          <label>WeChat Access Token<input id="wechatAccessToken" type="password" autocomplete="off"></label>
+        </div>
+      </section>
+
+      <section class="panel">
+        <p class="eyebrow">YouTube</p>
+        <h2>视频突破阈值</h2>
+        <label>时间窗口（天）<input id="youtubeDays" type="number" min="1" max="365"></label>
+        <label>最低播放量<input id="youtubeMinViews" type="number" min="0" step="100"></label>
+        <label>地区代码<input id="youtubeRegionCode" maxlength="2" placeholder="US"></label>
+      </section>
+
+      <section class="panel">
+        <p class="eyebrow">Bilibili</p>
+        <h2>低粉高播筛选</h2>
+        <label>时间窗口（天）<input id="bilibiliDays" type="number" min="1" max="365"></label>
+        <label>UP 主最高粉丝<input id="bilibiliMaxFollowers" type="number" min="0" step="1000"></label>
+        <label>最低播放量<input id="bilibiliMinPlay" type="number" min="0" step="100"></label>
+        <label>播放/粉丝倍率<input id="bilibiliMinPlayFollowerRatio" type="number" min="0" step="0.1"></label>
+      </section>
+
+      <section class="panel">
+        <p class="eyebrow">X / Twitter</p>
+        <h2>互动突破筛选</h2>
+        <label>时间窗口（天）<input id="xDays" type="number" min="1" max="90"></label>
+        <label>作者最高粉丝<input id="xMaxFollowers" type="number" min="0" step="1000"></label>
+        <label>最低互动量<input id="xMinEngagement" type="number" min="0" step="10"></label>
+        <label>最低浏览量<input id="xMinViews" type="number" min="0" step="100"></label>
+      </section>
+
+      <section class="panel">
+        <p class="eyebrow">WeChat</p>
+        <h2>阅读突破筛选</h2>
+        <label>时间窗口（天）<input id="wechatDays" type="number" min="1" max="90"></label>
+        <label>最低阅读量<input id="wechatMinRead" type="number" min="0" step="100"></label>
+        <label>阅读/月均倍率<input id="wechatMinReadMonthAvgRatio" type="number" min="0" step="0.1"></label>
+      </section>
+
+      <section class="panel span-2 footer-actions">
+        <div>
+          <h2>保存配置</h2>
+          <p id="status" role="status">修改后点击保存，弹窗搜索会自动使用这些阈值。</p>
+        </div>
+        <div class="actions right">
+          <button id="reset" class="ghost" type="button">恢复默认</button>
+          <button id="save" type="submit">保存设置</button>
+        </div>
+      </section>
+    </form>
+  </main>
+  <script type="module" src="options.js"></script>
+</body>
+</html>

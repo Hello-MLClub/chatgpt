@@ -7,14 +7,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 async function runSearch(payload) {
-  const settings = await chrome.storage.local.get(['youtubeApiKey', 'twitterApiKey', 'wechatApiBase', 'wechatAppId', 'wechatAppSecret', 'wechatAccessToken']);
+  const settings = await chrome.storage.local.get(['youtubeApiKey', 'twitterApiKey', 'wechatApiBase', 'wechatAppId', 'wechatAppSecret', 'wechatAccessToken', 'platformOptions']);
   const platforms = payload.platforms?.length ? payload.platforms : ['wechat', 'x', 'bilibili', 'youtube'];
   const imported = parseImported(payload.importJson);
   const results = [];
   const statuses = [];
   for (const platform of platforms) {
     try {
-      const platformResults = imported.length ? filterAndRank(imported.map((item) => normalizeImportedRecord(item, item.platform || platform)), platform, payload.options?.[platform]).slice(0, payload.limit || 25) : await collectPlatform(platform, payload, settings);
+      const options = getPlatformOptions(platform, payload, settings);
+      const platformResults = imported.length ? filterAndRank(imported.map((item) => normalizeImportedRecord(item, item.platform || platform)), platform, options).slice(0, payload.limit || 25) : await collectPlatform(platform, payload, settings, options);
       results.push(...platformResults);
       statuses.push({ platform, ok: true, count: platformResults.length, message: imported.length ? '来自离线 JSON' : '实时搜索完成' });
     } catch (error) {
@@ -39,17 +40,20 @@ function parseImported(text) {
   return [];
 }
 
-async function collectPlatform(platform, payload, settings) {
-  if (platform === 'youtube') return searchYouTube(payload, settings);
-  if (platform === 'bilibili') return searchBilibili(payload);
+function getPlatformOptions(platform, payload, settings) {
+  return { ...PLATFORM_DEFAULTS[platform], ...settings.platformOptions?.[platform], ...payload.options?.[platform] };
+}
+
+async function collectPlatform(platform, payload, settings, options) {
+  if (platform === 'youtube') return searchYouTube(payload, settings, options);
+  if (platform === 'bilibili') return searchBilibili(payload, options);
   if (platform === 'x') throw new Error('请在设置中填写 twitterapi.io Key；不同套餐端点可能不同，当前扩展保留离线 JSON 与配置提示。');
   if (platform === 'wechat') throw new Error('请配置 WECHAT_HOT_API_BASE/凭据；该 API 为私有部署，建议先粘贴脚本 JSON 输出。');
   return [];
 }
 
-async function searchYouTube(payload, settings) {
+async function searchYouTube(payload, settings, options) {
   if (!settings.youtubeApiKey) throw new Error('缺少 YouTube Data API Key。');
-  const options = { ...PLATFORM_DEFAULTS.youtube, ...payload.options?.youtube };
   const after = new Date(Date.now() - asNumber(options.days, 30) * 86400000).toISOString();
   const ids = new Map();
   for (const q of splitTerms(payload.topic)) {
@@ -76,8 +80,7 @@ function normalizeYouTube(video, channel = {}, sourceQuery, options) {
   return normalizeImportedRecord({ platform: 'youtube', content_id: video.id, url: `https://www.youtube.com/watch?v=${video.id}`, title: video.snippet?.title, author_name: video.snippet?.channelTitle, subscriber_count: subscribers, published_at: video.snippet?.publishedAt, view_count: views, like_count: likes, comment_count: comments, viral_score: viralScore, evidence: [`source_query:${sourceQuery}`, `high_views:${views}`] }, 'youtube');
 }
 
-async function searchBilibili(payload) {
-  const options = { ...PLATFORM_DEFAULTS.bilibili, ...payload.options?.bilibili };
+async function searchBilibili(payload, options) {
   const output = [];
   for (const keyword of splitTerms(payload.topic)) {
     const url = new URL('https://api.bilibili.com/x/web-interface/search/type');
