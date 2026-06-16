@@ -1,0 +1,11 @@
+{
+  "name": "viral-topic-finder-extension",
+  "version": "0.1.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node --check background.js && node --check popup.js && node --check options.js && python3 -m json.tool manifest.json >/dev/null && python3 scripts/validate-extension.py chrome-extension",
+    "prepare:extension": "python3 scripts/prepare-extension.py",
+    "zip:extension": "python3 scripts/prepare-extension.py --zip"
+  }
+}
