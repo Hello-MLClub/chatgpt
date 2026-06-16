@@ -1,4 +1,4 @@
-// 内容脚本 - 在页面上下文中运行
+// 更新content.js——添加内容提取功能
 
 // 页面加载时注入按钮
 if (document.readyState === 'loading') {
@@ -8,7 +8,6 @@ if (document.readyState === 'loading') {
 }
 
 function injectUI() {
-  // 检测当前页面是否支持
   const platform = detectPlatform();
   if (platform) {
     injectFloatingButton(platform);
@@ -25,7 +24,9 @@ function detectPlatform() {
     'douyin.com': 'douyin',
     'kuaishou.com': 'kuaishou',
     'medium.com': 'medium',
-    'csdn.net': 'csdn'
+    'csdn.net': 'csdn',
+    'juejin.cn': 'juejin',
+    'mp.weixin.qq.com': 'wechat'
   };
 
   for (const [domain, platform] of Object.entries(platforms)) {
@@ -84,7 +85,7 @@ function addFloatingButtonStyles() {
 }
 
 async function extractAndSync(platform) {
-  const content = extractContent(platform);
+  const content = await extractContent(platform);
   chrome.runtime.sendMessage(
     { action: 'syncContent', data: { content, platform } },
     response => {
@@ -97,7 +98,7 @@ async function extractAndSync(platform) {
   );
 }
 
-function extractContent(platform) {
+async function extractContent(platform) {
   let content = {};
 
   switch (platform) {
@@ -110,6 +111,15 @@ function extractContent(platform) {
     case 'xiaohongshu':
       content = extractXiaohongshuContent();
       break;
+    case 'wechat':
+      content = extractWechatContent();
+      break;
+    case 'csdn':
+      content = extractCsdnContent();
+      break;
+    case 'juejin':
+      content = extractJuejinContent();
+      break;
     default:
       content = extractGenericContent();
   }
@@ -121,7 +131,22 @@ function extractZhihuContent() {
   return {
     title: document.querySelector('h1')?.textContent || '',
     content: document.querySelector('[data-testid="richTextContent"]')?.innerHTML || '',
-    platform: 'zhihu'
+    text: document.querySelector('[data-testid="richTextContent"]')?.innerText || '',
+    author: document.querySelector('[data-testid="author"]')?.innerText || '',
+    platform: 'zhihu',
+    url: window.location.href
+  };
+}
+
+function extractWechatContent() {
+  return {
+    title: document.querySelector('#activity-name')?.innerText || document.title,
+    content: document.querySelector('#js_content')?.innerHTML || '',
+    text: document.querySelector('#js_content')?.innerText || '',
+    author: document.querySelector('#js_name')?.innerText || '',
+    publishDate: document.querySelector('#publish_time')?.innerText || '',
+    platform: 'wechat',
+    url: window.location.href
   };
 }
 
@@ -129,7 +154,9 @@ function extractWeiboContent() {
   return {
     content: document.querySelector('.txt')?.textContent || '',
     images: Array.from(document.querySelectorAll('img')).map(img => img.src),
-    platform: 'weibo'
+    author: document.querySelector('.name')?.textContent || '',
+    platform: 'weibo',
+    url: window.location.href
   };
 }
 
@@ -137,13 +164,37 @@ function extractXiaohongshuContent() {
   return {
     title: document.querySelector('.title')?.textContent || '',
     content: document.querySelector('.desc')?.textContent || '',
-    platform: 'xiaohongshu'
+    platform: 'xiaohongshu',
+    url: window.location.href
+  };
+}
+
+function extractCsdnContent() {
+  return {
+    title: document.querySelector('h1')?.innerText || '',
+    content: document.querySelector('.blog-content-box')?.innerHTML || '',
+    text: document.querySelector('.blog-content-box')?.innerText || '',
+    author: document.querySelector('.blog-author-box')?.innerText || '',
+    platform: 'csdn',
+    url: window.location.href
+  };
+}
+
+function extractJuejinContent() {
+  return {
+    title: document.querySelector('h1')?.innerText || '',
+    content: document.querySelector('.markdown-body')?.innerHTML || '',
+    text: document.querySelector('.markdown-body')?.innerText || '',
+    author: document.querySelector('[data-testid="author-info"]')?.innerText || '',
+    platform: 'juejin',
+    url: window.location.href
   };
 }
 
 function extractGenericContent() {
   return {
     title: document.title,
+    text: document.body.innerText,
     url: window.location.href,
     timestamp: new Date().toISOString()
   };
@@ -168,4 +219,32 @@ function showNotification(message, type) {
 
   document.body.appendChild(notification);
   setTimeout(() => notification.remove(), 3000);
+}
+
+// 接受来自popup的消息 - 提取当前页面内容
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'extractContent') {
+    extractAndReturnContent().then(content => {
+      sendResponse({ success: true, data: content });
+    }).catch(error => {
+      sendResponse({ success: false, error: error.message });
+    });
+    return true; // 保持通道打开的提示
+  }
+});
+
+async function extractAndReturnContent() {
+  const platform = detectPlatform();
+  
+  if (platform === 'wechat') {
+    return extractWechatContent();
+  } else if (platform === 'zhihu') {
+    return extractZhihuContent();
+  } else if (platform === 'csdn') {
+    return extractCsdnContent();
+  } else if (platform === 'juejin') {
+    return extractJuejinContent();
+  } else {
+    return extractGenericContent();
+  }
 }

@@ -1,4 +1,5 @@
-// 状态管理
+// 使用新的提取器更新popup.js
+
 const state = {
   contentMode: 'article',
   selectedPlatforms: [],
@@ -6,47 +7,103 @@ const state = {
   syncInProgress: false
 };
 
-// 初始化
 document.addEventListener('DOMContentLoaded', initPopup);
 
 function initPopup() {
   setupEventListeners();
   loadPlatforms();
   restoreState();
+  loadContentFromPage(); // 立即一键提取当前页面内容
 }
 
 function setupEventListeners() {
-  // 模式切换
   document.querySelectorAll('.mode-btn').forEach(btn => {
     btn.addEventListener('click', switchContentMode);
   });
 
-  // 获取内容
   document.getElementById('fetchBtn').addEventListener('click', fetchContent);
-
-  // 平台选择
   document.addEventListener('change', handlePlatformToggle);
-
-  // 同步
   document.getElementById('syncBtn').addEventListener('click', startSync);
   document.getElementById('cancelBtn').addEventListener('click', closePopup);
-
-  // 设置
   document.getElementById('settingsBtn').addEventListener('click', openSettings);
+}
 
-  // 获取当前页面内容
-  document.getElementById('contentUrl').addEventListener('focus', autoFillCurrentPage);
+// 一键提取当前页面的所有内容
+async function loadContentFromPage() {
+  const btn = document.getElementById('fetchBtn');
+  btn.textContent = '正在提取内容...';
+  btn.disabled = true;
+  
+  try {
+    // 使用content script钨取数据
+    chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+      chrome.tabs.sendMessage(tabs[0].id, { action: 'extractContent' }, response => {
+        if (response && response.success) {
+          state.currentContent = response.data;
+          displayExtractedContent(response.data);
+          btn.textContent = '筈新提取';
+        }
+        btn.disabled = false;
+      });
+    });
+  } catch (error) {
+    console.error('提取错误:', error);
+    btn.textContent = '获取内容';
+    btn.disabled = false;
+  }
+}
+
+// 显示提取的内容
+function displayExtractedContent(content) {
+  // 显示标题
+  if (content.title) {
+    document.getElementById('previewTitle').value = content.title;
+  }
+  
+  // 显示Markdown格式
+  if (content.markdown) {
+    document.getElementById('previewSummary').value = content.markdown;
+  } else if (content.text) {
+    document.getElementById('previewSummary').value = content.text;
+  }
+  
+  // 显示图片
+  if (content.images && content.images.length > 0) {
+    const container = document.getElementById('previewImages');
+    container.innerHTML = '';
+    content.images.slice(0, 9).forEach(img => {
+      const imgEl = document.createElement('img');
+      imgEl.src = img.url;
+      imgEl.alt = img.alt || '图片';
+      imgEl.style.cursor = 'pointer';
+      imgEl.title = '点击查看原图';
+      container.appendChild(imgEl);
+    });
+  }
+  
+  // 显示其他信息
+  if (content.author) {
+    const authorEl = document.querySelector('[data-field="author"]');
+    if (authorEl) authorEl.value = content.author;
+  }
+  
+  if (content.url) {
+    const urlEl = document.querySelector('[data-field="url"]');
+    if (urlEl) urlEl.value = content.url;
+  }
+  
+  // 显示预览区域
+  document.getElementById('contentPreview').classList.remove('hidden');
+  document.getElementById('syncBtn').disabled = false;
 }
 
 function switchContentMode(e) {
   const mode = e.target.dataset.mode;
   state.contentMode = mode;
 
-  // UI 更新
   document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
   e.target.classList.add('active');
 
-  // 清空内容
   resetContentPreview();
   updatePlatformList(mode);
 }
@@ -91,32 +148,17 @@ function updateSelectedCount() {
   const selected = state.selectedPlatforms.length;
   document.getElementById('selectedCount').textContent = selected;
   document.getElementById('totalCount').textContent = total;
-  document.getElementById('syncBtn').disabled = selected === 0;
+  document.getElementById('syncBtn').disabled = selected === 0 || !state.currentContent;
 }
 
 function fetchContent() {
-  const input = document.getElementById('contentUrl').value.trim();
-  if (!input) {
-    alert('请输入链接或标题');
-    return;
-  }
-
-  // 模拟获取内容
-  state.currentContent = {
-    title: input,
-    summary: '这是文章的摘要内容...',
-    images: [],
-    url: input,
-    mode: state.contentMode
-  };
-
-  displayContentPreview(state.currentContent);
+  loadContentFromPage();
 }
 
 function displayContentPreview(content) {
   document.getElementById('contentPreview').classList.remove('hidden');
-  document.getElementById('previewTitle').value = content.title;
-  document.getElementById('previewSummary').value = content.summary;
+  document.getElementById('previewTitle').value = content.title || '';
+  document.getElementById('previewSummary').value = content.markdown || content.text || '';
   document.getElementById('syncBtn').disabled = false;
 }
 
@@ -128,7 +170,7 @@ function resetContentPreview() {
 
 async function startSync() {
   if (!state.currentContent || state.selectedPlatforms.length === 0) {
-    alert('请先选择平台和内容');
+    alert('请先提取内容并选择平台');
     return;
   }
 
@@ -148,12 +190,11 @@ async function startSync() {
 
 async function syncToPlatform(platformId, content) {
   return new Promise(resolve => {
-    // 模拟同步过程
     setTimeout(() => {
       resolve({
         platform: platformId,
         success: Math.random() > 0.1,
-        message: `${platformId} - 同步完成`
+        message: `${getPlatformName(platformId)} - 同步完成`
       });
     }, 1000);
   });
@@ -172,14 +213,6 @@ function showSyncComplete(results) {
   alert(`同步完成！成功: ${successful}/${results.length}`);
 }
 
-function autoFillCurrentPage() {
-  chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-    if (tabs[0]) {
-      document.getElementById('contentUrl').value = tabs[0].url;
-    }
-  });
-}
-
 function openSettings() {
   chrome.runtime.openOptionsPage();
 }
@@ -189,7 +222,6 @@ function closePopup() {
 }
 
 function updatePlatformList(mode) {
-  // 根据模式更新平台列表
   loadPlatforms();
 }
 
