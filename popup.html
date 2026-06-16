@@ -1,1 +1,72 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>Viral Topic Finder</title><link rel="stylesheet" href="styles.css"></head><body><main class="popup"><h1>爆款选题助手</h1><label>选题方向<textarea id="topic" placeholder="AI agent, Claude Code, AI编程"></textarea></label><section class="platforms"><label><input type="checkbox" value="wechat" checked> WeChat</label><label><input type="checkbox" value="x" checked> X</label><label><input type="checkbox" value="bilibili" checked> Bilibili</label><label><input type="checkbox" value="youtube" checked> YouTube</label></section><details><summary>离线 JSON（可选）</summary><textarea id="importJson" placeholder="粘贴脚本输出的 results/items JSON"></textarea></details><div class="actions"><button id="run">开始搜索</button><button id="options">设置</button></div><p id="status"></p><div id="results"></div></main><script type="module" src="popup.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>爱贝壳内容同步助手</title>
+  <link rel="stylesheet" href="styles/common.css">
+  <link rel="stylesheet" href="styles/popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <div class="popup-header">
+      <h1>📤 内容同步</h1>
+      <button id="settingsBtn" class="settings-btn" title="打开设置">⚙️</button>
+    </div>
+
+    <div class="content-mode-selector">
+      <button class="mode-btn active" data-mode="article">📄 文章</button>
+      <button class="mode-btn" data-mode="video">🎬 视频</button>
+      <button class="mode-btn" data-mode="social">💬 动态</button>
+      <button class="mode-btn" data-mode="podcast">🎙️ 播客</button>
+    </div>
+
+    <div class="form-section">
+      <div id="contentInput" class="content-input">
+        <input type="text" id="contentUrl" placeholder="输入内容链接或标题..." class="input-field">
+        <button id="fetchBtn" class="btn-primary">获取内容</button>
+      </div>
+
+      <div id="contentPreview" class="content-preview hidden">
+        <div class="preview-item">
+          <label>标题</label>
+          <input type="text" id="previewTitle" class="input-field" readonly>
+        </div>
+        <div class="preview-item">
+          <label>摘要</label>
+          <textarea id="previewSummary" class="input-field" readonly style="height: 80px;"></textarea>
+        </div>
+        <div class="preview-item">
+          <label>图片</label>
+          <div id="previewImages" class="preview-images"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="platform-selector">
+      <h3>选择同步平台</h3>
+      <div id="platformList" class="platform-list">
+        <!-- 动态生成的平台列表 -->
+      </div>
+      <div class="platform-counter">
+        已选择: <span id="selectedCount">0</span> / <span id="totalCount">0</span> 个平台
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button id="syncBtn" class="btn-primary btn-sync" disabled>🚀 开始同步</button>
+      <button id="cancelBtn" class="btn-secondary">取消</button>
+    </div>
+
+    <div id="syncStatus" class="sync-status hidden">
+      <div class="status-header">同步进度</div>
+      <div id="syncProgress" class="sync-progress"></div>
+      <div id="syncLog" class="sync-log"></div>
+    </div>
+  </div>
+
+  <script src="utils/platforms.js"></script>
+  <script src="utils/storage.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

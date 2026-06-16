@@ -1,0 +1,162 @@
+.options-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  background: white;
+  min-height: 100vh;
+}
+
+.options-header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #667eea;
+}
+
+.options-header h1 {
+  font-size: 28px;
+  color: #333;
+  margin: 0;
+}
+
+.options-content {
+  margin-bottom: 40px;
+}
+
+.settings-section {
+  margin-bottom: 40px;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 8px;
+}
+
+.settings-section h2 {
+  font-size: 18px;
+  margin-bottom: 20px;
+  color: #333;
+  border-bottom: 2px solid #667eea;
+  padding-bottom: 10px;
+}
+
+.setting-item {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.setting-item label {
+  flex: 1;
+  font-weight: 500;
+  color: #333;
+}
+
+.setting-toggle {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.setting-input {
+  width: 100px;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.setting-desc {
+  display: block;
+  font-size: 12px;
+  color: #999;
+  margin-left: 32px;
+}
+
+.platform-settings {
+  display: grid;
+  gap: 12px;
+}
+
+.platform-setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.platform-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.platform-icon {
+  font-size: 24px;
+}
+
+.platform-name {
+  font-weight: 500;
+}
+
+.platform-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.platform-status {
+  font-size: 12px;
+  color: #999;
+}
+
+.setting-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.setting-buttons button {
+  flex: 1;
+  min-width: 150px;
+}
+
+.about-info {
+  background: white;
+  padding: 16px;
+  border-radius: 4px;
+  line-height: 1.8;
+}
+
+.about-info p {
+  margin: 8px 0;
+}
+
+.about-info a {
+  color: #667eea;
+  text-decoration: none;
+}
+
+.about-info a:hover {
+  text-decoration: underline;
+}
+
+.options-footer {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px;
+  border-top: 1px solid #eee;
+  background: #f9f9f9;
+  border-radius: 4px;
+}
+
+.save-status {
+  display: flex;
+  align-items: center;
+  margin-left: 12px;
+  font-size: 14px;
+  color: #4caf50;
+}

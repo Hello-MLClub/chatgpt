@@ -1,1 +1,100 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>设置</title><link rel="stylesheet" href="styles.css"></head><body><main class="options"><h1>API 设置</h1><label>YouTube Data API Key<input id="youtubeApiKey" type="password"></label><label>twitterapi.io Key<input id="twitterApiKey" type="password"></label><label>WeChat API Base<input id="wechatApiBase" placeholder="https://example.com"></label><label>WeChat App ID<input id="wechatAppId"></label><label>WeChat App Secret<input id="wechatAppSecret" type="password"></label><label>WeChat Access Token<input id="wechatAccessToken" type="password"></label><button id="save">保存</button><p id="status"></p></main><script type="module" src="options.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>爱贝壳 - 设置</title>
+  <link rel="stylesheet" href="styles/common.css">
+  <link rel="stylesheet" href="styles/options.css">
+</head>
+<body>
+  <div class="options-container">
+    <div class="options-header">
+      <h1>🔧 爱贝壳设置</h1>
+    </div>
+
+    <div class="options-content">
+      <!-- 基础设置 -->
+      <section class="settings-section">
+        <h2>基础设置</h2>
+        <div class="setting-item">
+          <label for="autoExtract">自动提取内容</label>
+          <input type="checkbox" id="autoExtract" class="setting-toggle">
+          <span class="setting-desc">访问支持的平台时自动提取内容</span>
+        </div>
+        
+        <div class="setting-item">
+          <label for="autoFill">自动填充内容</label>
+          <input type="checkbox" id="autoFill" class="setting-toggle">
+          <span class="setting-desc">同步时自动在目标平台填充内容</span>
+        </div>
+
+        <div class="setting-item">
+          <label for="notifySync">同步提醒</label>
+          <input type="checkbox" id="notifySync" class="setting-toggle" checked>
+          <span class="setting-desc">同步完成时显示通知</span>
+        </div>
+      </section>
+
+      <!-- 平台设置 -->
+      <section class="settings-section">
+        <h2>平台账号管理</h2>
+        <div id="platformSettings" class="platform-settings">
+          <!-- 动态生成的平台设置 -->
+        </div>
+      </section>
+
+      <!-- 高级设置 -->
+      <section class="settings-section">
+        <h2>高级设置</h2>
+        <div class="setting-item">
+          <label for="syncTimeout">同步超时时间 (秒)</label>
+          <input type="number" id="syncTimeout" class="setting-input" min="10" max="300" value="60">
+          <span class="setting-desc">每个平台同步的超时时间</span>
+        </div>
+
+        <div class="setting-item">
+          <label for="batchSize">批量同步数</label>
+          <input type="number" id="batchSize" class="setting-input" min="1" max="10" value="3">
+          <span class="setting-desc">同时同步的平台数量</span>
+        </div>
+
+        <div class="setting-item">
+          <label for="maxRetry">最大重试次数</label>
+          <input type="number" id="maxRetry" class="setting-input" min="0" max="5" value="3">
+          <span class="setting-desc">同步失败时的重试次数</span>
+        </div>
+      </section>
+
+      <!-- 数据管理 -->
+      <section class="settings-section">
+        <h2>数据管理</h2>
+        <div class="setting-buttons">
+          <button id="exportBtn" class="btn-secondary">📥 导出设置</button>
+          <button id="importBtn" class="btn-secondary">📤 导入设置</button>
+          <button id="clearBtn" class="btn-danger">🗑️ 清除所有数据</button>
+        </div>
+      </section>
+
+      <!-- 关于 -->
+      <section class="settings-section">
+        <h2>关于</h2>
+        <div class="about-info">
+          <p><strong>扩展名:</strong> 爱贝壳内容同步助手</p>
+          <p><strong>版本:</strong> 1.0.0</p>
+          <p><strong>官网:</strong> <a href="https://lizhi.shop/products/aibeike-post-sync-assistant" target="_blank">爱贝壳官方</a></p>
+        </div>
+      </section>
+    </div>
+
+    <div class="options-footer">
+      <button id="saveBtn" class="btn-primary">💾 保存设置</button>
+      <span id="saveStatus" class="save-status"></span>
+    </div>
+  </div>
+
+  <script src="utils/platforms.js"></script>
+  <script src="utils/storage.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>
