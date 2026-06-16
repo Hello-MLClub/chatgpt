@@ -1,21 +1,33 @@
-import { PLATFORM_LABELS } from './viralTopic.js';
+import { buildArticlePackage, PLATFORM_LABELS } from './articleAssistant.js';
 const $ = (id) => document.getElementById(id);
+let latestMarkdown = '';
 $('options').addEventListener('click', () => chrome.runtime.openOptionsPage());
-$('run').addEventListener('click', async () => {
-  const topic = $('topic').value.trim();
-  const platforms = [...document.querySelectorAll('.platforms input:checked')].map((item) => item.value);
-  if (!topic && !$('importJson').value.trim()) return setStatus('请输入选题方向或离线 JSON。', true);
-  setStatus('搜索中…');
-  const response = await chrome.runtime.sendMessage({ type: 'RUN_SEARCH', payload: { topic, platforms, importJson: $('importJson').value, limit: 30 } });
-  if (!response?.ok) return setStatus(response?.error || '搜索失败', true);
-  render(response);
+$('run').addEventListener('click', () => {
+  const payload = readPayload();
+  if (!payload.title || !payload.content) return setStatus('请填写文章标题和正文。', true);
+  const result = buildArticlePackage(payload);
+  latestMarkdown = result.markdown;
+  render(result);
+  setStatus(`已生成：${result.platforms.length} 个平台发布建议。`);
 });
-function setStatus(text, isError = false) { $('status').textContent = text; $('status').className = isError ? 'error' : ''; }
-function render(response) {
-  setStatus(`完成：${response.results.length} 条结果。`);
-  const statusHtml = response.statuses.map((s) => `<li class="${s.ok ? '' : 'warn'}">${PLATFORM_LABELS[s.platform] || s.platform}: ${s.message} (${s.count})</li>`).join('');
-  const rows = response.results.map((item) => `<article><div class="meta">${PLATFORM_LABELS[item.platform] || item.platform} · ${item.author_name || 'unknown'} · ${item.published_at || ''}</div><h2>${escapeHtml(item.title)}</h2><p>浏览/阅读/播放：${format(item.view_count)} · 粉丝/订阅：${item.follower_count ?? '未知'} · 分数：${item.breakout_score}</p><p class="evidence">${(item.evidence || []).map(escapeHtml).join('，')}</p>${item.url ? `<a href="${item.url}" target="_blank" rel="noreferrer">打开来源</a>` : ''}</article>`).join('');
-  $('results').innerHTML = `<ul class="statuses">${statusHtml}</ul>${rows || '<p>没有匹配结果，请降低阈值或使用离线 JSON。</p>'}`;
+$('copy').addEventListener('click', async () => {
+  if (!latestMarkdown) return setStatus('请先生成发布包。', true);
+  await navigator.clipboard.writeText(latestMarkdown);
+  setStatus('发布包已复制到剪贴板。');
+});
+function readPayload() {
+  return {
+    title: $('title').value.trim(),
+    content: $('content').value.trim(),
+    audience: $('audience').value.trim(),
+    keywords: $('keywords').value.split(/[,，]/).map((item) => item.trim()).filter(Boolean),
+    platforms: [...document.querySelectorAll('.platforms input:checked')].map((item) => item.value)
+  };
 }
-function format(value) { return Number(value || 0).toLocaleString('zh-CN'); }
-function escapeHtml(value) { return String(value ?? '').replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch])); }
+function setStatus(text, isError = false) { $('status').textContent = text; $('status').className = isError ? 'error' : ''; }
+function render(result) {
+  const overview = `<section class="card"><h2>发布总览</h2><p>${escapeHtml(result.summary)}</p><ul>${result.checklist.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul></section>`;
+  const platformCards = result.platforms.map((item) => `<article><div class="meta">${PLATFORM_LABELS[item.platform] || item.platform} · ${item.lengthHint}</div><h2>${escapeHtml(item.title)}</h2><p>${escapeHtml(item.intro)}</p><p><strong>标签：</strong>${item.tags.map(escapeHtml).join('、')}</p><p class="evidence">${escapeHtml(item.note)}</p></article>`).join('');
+  $('results').innerHTML = `${overview}${platformCards}`;
+}
+function escapeHtml(value) { return String(value ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); }

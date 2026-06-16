@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
-  "name": "Viral Topic Finder",
-  "description": "基于 kangarooking viral-topic 工作流的跨平台爆款选题 Chrome 扩展。",
+  "name": "文章同步助手",
+  "description": "基于爱贝壳内容同步流程的多平台文章发布包生成 Chrome 扩展。",
   "version": "0.1.0",
   "action": {
-    "default_title": "Viral Topic Finder",
+    "default_title": "文章同步助手",
     "default_popup": "popup.html"
   },
   "options_page": "options.html",
@@ -12,7 +12,9 @@
     "service_worker": "background.js",
     "type": "module"
   },
-  "permissions": ["storage"],
+  "permissions": [
+    "storage"
+  ],
   "host_permissions": [
     "https://www.googleapis.com/*",
     "https://api.twitterapi.io/*",
